@@ -6,8 +6,7 @@ from pydantic import BaseModel
 class SeccionCreate(BaseModel):
     """Modelo para crear una nueva sección"""
 
-    id: Optional[int]
-    cod: str
+    cod: Optional[str]
     nombre: str
     descripcion: Optional[str]
 

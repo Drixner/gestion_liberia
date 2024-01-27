@@ -1,19 +1,18 @@
-"""Modelo de la tabla secciones."""
-from sqlalchemy import Column, Integer, String
+"""Modelo de tabla familia"""
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 # Necesaio para cada modelo
 from ..config.database import Base
 
 
-class Section(Base):
-    """
-    Define la tabla de secciones."""
+class Family(Base):
+    """Define la tabla de familias."""
 
-    __tablename__ = "sections"
-
+    __tablename__ = "families"
     id = Column(Integer, primary_key=True, index=True)
     cod = Column(String(10), unique=True, index=True)
     name = Column(String(255), unique=True, index=True)
     description = Column(String(255))
-    families = relationship("Family", back_populates="section")
+    section_id = Column(Integer, ForeignKey("sections.id"))
+    section = relationship("Section", back_populates="families")
