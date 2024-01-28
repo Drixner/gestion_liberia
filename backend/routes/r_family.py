@@ -1,6 +1,7 @@
 """ Rutas para el CRUD de familias """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from ..models.m_family import Family
+from ..models.m_seccion import Section
 from ..config.db import SessionLocal
 from ..schemas.sch_family import FamiliaCreate, FamiliaUpdate
 
@@ -20,17 +21,37 @@ async def get_families():
 @Familia.post("/families", response_model=FamiliaCreate)
 async def create_family(family: FamiliaCreate):
     """create a new family"""
+    if not family.section_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El código de la sección es obligatorio.",
+        )
+
     with SessionLocal() as db:
+        # Verificar si la sección existe
+        seccion = db.query(Section).filter(Section.id == family.section_id).first()
+        if not seccion:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"La sección con el código {family.section_id} no existe.",
+            )
+
         new_family = Family(
-            name=family.nombre,
+            name=family.name,
             cod=family.cod,
-            description=family.descripcion,
-            section_id=family.seccion_id,
+            description=family.description,
+            section_id=family.section_id,
         )
         db.add(new_family)
-        db.commit()
+        try:
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            ) from e
         db.refresh(new_family)
-        return family
+        return new_family
 
 
 # Actualizar una familia existente
@@ -41,21 +62,21 @@ async def update_family(family_id: int, family: FamiliaUpdate):
     db_family = db.query(Family).get(family_id)
     if db_family is None:
         raise HTTPException(status_code=404, detail="Family not found")
-    db_family.name = family.nombre if family.nombre else db_family.name
+    db_family.name = family.name if family.name else db_family.name
     db_family.cod = family.cod if family.cod else db_family.cod
     db_family.description = (
-        family.descripcion if family.descripcion else db_family.description
+        family.description if family.description else db_family.description
     )
     db_family.section_id = (
-        family.seccion_id if family.seccion_id else db_family.section_id
+        family.section_id if family.section_id else db_family.section_id
     )
     db.commit()
     db.refresh(db_family)
     return FamiliaUpdate(
-        nombre=db_family.name,
+        name=db_family.name,
         cod=db_family.cod,
-        descripcion=db_family.description,
-        seccion_id=db_family.section_id,
+        description=db_family.description,
+        section_id=db_family.section_id,
     )
 
 

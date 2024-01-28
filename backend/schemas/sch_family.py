@@ -8,9 +8,9 @@ class FamiliaCreate(BaseModel):
 
     id: Optional[int]
     cod: str
-    nombre: str
-    descripcion: Optional[str]
-    seccion_id: int  # Asegúrate de incluir el id de la sección a la que pertenece la familia
+    name: str
+    description: Optional[str]
+    section_id: int  # Asegúrate de incluir el id de la sección a la que pertenece la familia
 
     class Config:
         """Configuraciones del modelo"""
@@ -21,7 +21,7 @@ class FamiliaCreate(BaseModel):
 class FamiliaUpdate(BaseModel):
     """Modelo para actualizar una familia existente"""
 
-    nombre: Optional[str]
+    name: Optional[str]
     cod: Optional[str]
-    descripcion: Optional[str]
-    seccion_id: Optional[int]
+    description: Optional[str]
+    section_id: Optional[int]
