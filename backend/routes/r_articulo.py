@@ -22,9 +22,7 @@ articulo_router = APIRouter()
 
 # Obtener todos los artículos
 @articulo_router.get("/articulos/", response_model=List[Articulo])
-async def read_articulos(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-):
+async def get_articulos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Obtener todos los artículos"""
     articulos = db.query(ArticuloModel).offset(skip).limit(limit).all()
     return articulos
