@@ -21,3 +21,14 @@ class Articulo(Base):
     sale_price = Column(Float)
     und = Column(String)
     tax = Column(Float, default=0.18)
+
+
+class CodigoBarra(Base):
+    """Define la tabla de códigos de barras."""
+
+    __tablename__ = "codigos_barras"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ean = Column(String, unique=True, index=True)
+    articulo_id = Column(Integer, ForeignKey("articulos.id"))
+    articulo = relationship("Articulo", back_populates="codigos_barras")
