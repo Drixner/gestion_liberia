@@ -5,10 +5,11 @@ import string
 from typing import List
 
 # Importaciones de terceros
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 
 # Importaciones locales de la aplicación
-from ..config.db import SessionLocal
+from ..config.db import get_db
 from ..models.m_articulo import (
     Articulo as ArticuloModel,
     CodigoBarra as CodigoBarraModel,
@@ -16,19 +17,21 @@ from ..models.m_articulo import (
 from ..schemas.sch_articulo import Articulo, ArticuloCreate
 
 
-Articulo = APIRouter()
+articulo_router = APIRouter()
 
 
 # Obtener todos los artículos
-@Articulo.get("/articulos/", response_model=List[Articulo])
-async def read_articulos(skip: int = 0, limit: int = 100, db=SessionLocal):
+@articulo_router.get("/articulos/", response_model=List[Articulo])
+async def read_articulos(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
     """Obtener todos los artículos"""
     articulos = db.query(ArticuloModel).offset(skip).limit(limit).all()
     return articulos
 
 
-@Articulo.get("/articulos/{articulo_id}", response_model=Articulo)
-async def read_articulo(articulo_id: int, db=SessionLocal):
+@articulo_router.get("/articulos/{articulo_id}", response_model=Articulo)
+async def read_articulo(articulo_id: int, db: Session = Depends(get_db)):
     """Obtener un artículo por su ID"""
     db_articulo = (
         db.query(ArticuloModel).filter(ArticuloModel.id == articulo_id).first()
@@ -39,8 +42,8 @@ async def read_articulo(articulo_id: int, db=SessionLocal):
 
 
 # Crear un nuevo artículo
-@Articulo.post("/articulos/", response_model=Articulo)
-async def create_articulo(articulo: ArticuloCreate, db=SessionLocal):
+@articulo_router.post("/articulos/", response_model=Articulo)
+async def create_articulo(articulo: ArticuloCreate, db: Session = Depends(get_db)):
     """Crear un nuevo artículo"""
     # Generar código corto
     articulo.cod_short = "".join(
@@ -60,8 +63,10 @@ async def create_articulo(articulo: ArticuloCreate, db=SessionLocal):
 
 
 # Actualizar un artículo por su ID
-@Articulo.put("/articulos/{articulo_id}", response_model=Articulo)
-def update_articulo(articulo_id: int, articulo: ArticuloCreate, db=SessionLocal):
+@articulo_router.put("/articulos/{articulo_id}", response_model=Articulo)
+def update_articulo(
+    articulo_id: int, articulo: ArticuloCreate, db: Session = Depends(get_db)
+):
     """Actualizar un artículo por su ID"""
     db_articulo = (
         db.query(ArticuloModel).filter(ArticuloModel.id == articulo_id).first()
@@ -78,8 +83,8 @@ def update_articulo(articulo_id: int, articulo: ArticuloCreate, db=SessionLocal)
 
 
 # Eliminar un artículo por su ID
-@Articulo.delete("/articulos/{articulo_id}", response_model=Articulo)
-def delete_articulo(articulo_id: int, db=SessionLocal):
+@articulo_router.delete("/articulos/{articulo_id}", response_model=Articulo)
+def delete_articulo(articulo_id: int, db: Session = Depends(get_db)):
     """Eliminar un artículo por su ID"""
     db_articulo = (
         db.query(ArticuloModel).filter(ArticuloModel.id == articulo_id).first()

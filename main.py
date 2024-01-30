@@ -3,6 +3,7 @@ Este modulo es principal"""
 from fastapi import FastAPI
 from backend.routes.r_seccion import Seccion
 from backend.routes.r_family import Familia
+from backend.routes.r_articulo import articulo_router
 from backend.config.db import Base, engine
 
 
@@ -18,3 +19,4 @@ create_tables()
 
 app.include_router(Seccion)
 app.include_router(Familia)
+app.include_router(articulo_router)

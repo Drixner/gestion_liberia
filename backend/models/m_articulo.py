@@ -13,13 +13,13 @@ class Articulo(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     cod_short = Column(String(6), unique=True, index=True)
-    name = Column(String)
-    description = Column(String)
+    name = Column(String(250))
+    description = Column(String(255))
     ean = relationship("CodigoBarra", back_populates="articulo")
     family_id = Column(Integer, ForeignKey("families.id"))
     purchase_price = Column(Float)
     sale_price = Column(Float)
-    und = Column(String)
+    und = Column(String(20))
     tax = Column(Float, default=0.18)
 
 
@@ -29,6 +29,6 @@ class CodigoBarra(Base):
     __tablename__ = "codigos_barras"
 
     id = Column(Integer, primary_key=True, index=True)
-    ean = Column(String, unique=True, index=True)
+    ean = Column(String(20), unique=True, index=True)
     articulo_id = Column(Integer, ForeignKey("articulos.id"))
     articulo = relationship("Articulo", back_populates="codigos_barras")
