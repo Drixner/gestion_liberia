@@ -50,7 +50,7 @@ async def create_articulo(articulo: ArticuloCreate, db: Session = Depends(get_db
 
     # Generar código de barras
     codigo_barra = "".join(random.choices(string.digits, k=13))
-    db_codigo = CodigoBarraModel(ean=codigo_barra)
+    db_codigo = CodigoBarraModel(codigos_barras=codigo_barra)
     db.add(db_codigo)
 
     db_articulo = ArticuloModel(**articulo.dict())

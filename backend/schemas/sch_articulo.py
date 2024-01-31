@@ -30,7 +30,7 @@ class ArticuloBase(BaseModel):
     cod_short: Optional[str]
     name: str
     description: Optional[str]
-    ean: List[CodigoBarraCreate] = []
+    codigos_barras: List[CodigoBarraCreate] = []
     family_id: int
     purchase_price: float
     sale_price: float
