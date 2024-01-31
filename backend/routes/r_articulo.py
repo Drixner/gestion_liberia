@@ -44,7 +44,7 @@ async def read_articulo_by_codigo(codigo_barra: str, db: Session = Depends(get_d
 
 
 # Obtener articulo por nombre
-@articulo_router.get("/articulos/nombre/{nombre}", response_model=Articulo)
+@articulo_router.get("/articulos/nombre/{nombre}", response_model=List[Articulo])
 async def read_articulo_by_nombre(nombre: str, db: Session = Depends(get_db)):
     """Obtener un artículo por su nombre"""
     db_articulos = (
