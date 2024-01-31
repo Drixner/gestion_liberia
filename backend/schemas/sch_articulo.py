@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class CodigoBarraBase(BaseModel):
     """Modelo para el manejo de los códigos de barras."""
 
-    ean: str
+    codigos_barras: str
 
 
 class CodigoBarraCreate(CodigoBarraBase):
@@ -48,7 +48,7 @@ class ArticuloUpdate(BaseModel):
     name: Optional[str]
     cod_short: Optional[str]
     description: Optional[str]
-    ean: List[CodigoBarraCreate] = []
+    codigos_barras: List[CodigoBarraCreate] = []
     family_id: Optional[int]
     purchase_price: Optional[float]
     sale_price: Optional[float]
