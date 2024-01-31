@@ -44,19 +44,18 @@ async def read_articulo(articulo_id: int, db: Session = Depends(get_db)):
 async def create_articulo(articulo: ArticuloCreate, db: Session = Depends(get_db)):
     """Crear un nuevo artículo"""
     # Generar código corto
-    articulo.cod_short = "".join(
-        random.choices(string.ascii_uppercase + string.digits, k=6)
-    )
+    articulo.cod_short = "".join(random.choices(string.digits, k=6))
+
+    db_articulo = ArticuloModel(**articulo.dict())
+    db.add(db_articulo)
+    db.commit()
+    db.refresh(db_articulo)
 
     # Generar código de barras
     codigo_barra = "".join(random.choices(string.digits, k=13))
     db_codigo = CodigoBarraModel(codigos_barras=codigo_barra)
     db.add(db_codigo)
 
-    db_articulo = ArticuloModel(**articulo.dict())
-    db.add(db_articulo)
-    db.commit()
-    db.refresh(db_articulo)
     return db_articulo
 
 
