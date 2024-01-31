@@ -28,6 +28,7 @@ async def get_articulos(skip: int = 0, limit: int = 100, db: Session = Depends(g
     return articulos
 
 
+# Obtener articulo por ID
 @articulo_router.get("/articulos/{articulo_id}", response_model=Articulo)
 async def read_articulo(articulo_id: int, db: Session = Depends(get_db)):
     """Obtener un artículo por su ID"""
