@@ -20,7 +20,7 @@ from ..schemas.sch_articulo import Articulo, ArticuloCreate
 articulo_router = APIRouter()
 
 
-# Obtener todos los artículos
+# Obtener una lista de articulos
 @articulo_router.get("/articulos/", response_model=List[Articulo])
 async def get_articulos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Obtener todos los artículos"""
@@ -28,16 +28,31 @@ async def get_articulos(skip: int = 0, limit: int = 100, db: Session = Depends(g
     return articulos
 
 
-# Obtener articulo por ID
-@articulo_router.get("/articulos/{articulo_id}", response_model=Articulo)
-async def read_articulo(articulo_id: int, db: Session = Depends(get_db)):
-    """Obtener un artículo por su ID"""
+# Obtener articulo por código de barra
+@articulo_router.get("/articulos/codigo/{codigo_barra}", response_model=Articulo)
+async def read_articulo_by_codigo(codigo_barra: str, db: Session = Depends(get_db)):
+    """Obtener un artículo por su código de barra"""
     db_articulo = (
-        db.query(ArticuloModel).filter(ArticuloModel.id == articulo_id).first()
+        db.query(ArticuloModel)
+        .join(CodigoBarraModel)
+        .filter(CodigoBarraModel.codigos_barras == codigo_barra)
+        .first()
     )
     if db_articulo is None:
         raise HTTPException(status_code=404, detail="Articulo not found")
     return db_articulo
+
+
+# Obtener articulo por nombre
+@articulo_router.get("/articulos/nombre/{nombre}", response_model=Articulo)
+async def read_articulo_by_nombre(nombre: str, db: Session = Depends(get_db)):
+    """Obtener un artículo por su nombre"""
+    db_articulos = (
+        db.query(ArticuloModel).filter(ArticuloModel.nombre.ilike(f"%{nombre}%")).all()
+    )
+    if not db_articulos:
+        raise HTTPException(status_code=404, detail="Articulo not found")
+    return db_articulos
 
 
 # Crear un nuevo artículo
