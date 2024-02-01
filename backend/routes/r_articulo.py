@@ -48,7 +48,7 @@ async def read_articulo_by_codigo(codigo_barra: str, db: Session = Depends(get_d
 async def read_articulo_by_nombre(nombre: str, db: Session = Depends(get_db)):
     """Obtener un artículo por su nombre"""
     db_articulos = (
-        db.query(ArticuloModel).filter(ArticuloModel.nombre.ilike(f"%{nombre}%")).all()
+        db.query(ArticuloModel).filter(ArticuloModel.name.ilike(f"%{nombre}%")).all()
     )
     if not db_articulos:
         raise HTTPException(status_code=404, detail="Articulo not found")
