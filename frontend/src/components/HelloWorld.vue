@@ -26,7 +26,7 @@ export default {
   },
   mounted() {
     axios
-      .get("http://localhost:8000/sections")
+      .get("http://127.0.0.1:8000/articulos")
       .then((response) => {
         this.secciones = response.data.sections;
       })
