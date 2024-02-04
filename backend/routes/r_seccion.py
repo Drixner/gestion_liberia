@@ -1,4 +1,5 @@
 """ Rutas para el CRUD de secciones """
+
 from fastapi import APIRouter, HTTPException
 from ..models.m_seccion import Section
 from ..config.db import SessionLocal
@@ -21,8 +22,11 @@ async def get_sections():
 async def create_section(section: SeccionCreate):
     """create a new section"""
     with SessionLocal() as db:
+        # Generar el código corto
+        short_code = section.nombre[:4].upper()
+
         new_section = Section(
-            name=section.nombre, cod=section.cod, description=section.descripcion
+            name=section.nombre, cod=short_code, description=section.descripcion
         )
         db.add(new_section)
         db.commit()

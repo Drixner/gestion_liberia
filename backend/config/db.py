@@ -14,7 +14,7 @@ password = os.getenv("DB_PASS")
 database_name = os.getenv("DB_NAME")
 
 SQLALCHEMY_DATABASE_URL = (
-    f"mysql+mysqlconnector://{user}:{password}@localhost/{database_name}"
+    f"mysql+mysqlconnector://{user}:{password}@localhost:33061/{database_name}"
 )
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
