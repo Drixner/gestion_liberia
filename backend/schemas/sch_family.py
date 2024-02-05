@@ -18,6 +18,15 @@ class FamiliaCreate(BaseModel):
         from_attributes = True
 
 
+class FamiliaResponse(BaseModel):
+    """Modelo para la respuesta de una familia"""
+
+    id: int
+    cod: str
+    name: str
+    section_name: str
+
+
 class FamiliaUpdate(BaseModel):
     """Modelo para actualizar una familia existente"""
 

@@ -1,10 +1,10 @@
 """ Rutas para el CRUD de familias """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Response
 from ..models.m_family import Family
 from ..models.m_seccion import Section
 from ..config.db import SessionLocal
-from ..schemas.sch_family import FamiliaCreate, FamiliaUpdate
+from ..schemas.sch_family import FamiliaCreate, FamiliaUpdate, FamiliaResponse
 
 Familia = APIRouter()
 
@@ -28,78 +28,107 @@ def generate_family_code_from_name(name: str) -> str:
 
 
 # Crear una nueva familia
-@Familia.post("/families", response_model=FamiliaCreate)
+@Familia.post("/families", response_model=FamiliaResponse)
 async def create_family(family: FamiliaCreate):
     """create a new family"""
-    if not family.section_id:
+    if not family.section_name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El código de la sección es obligatorio.",
+            detail="El nombre de la sección es obligatorio.",
         )
 
-    # Generar el código de la familia a partir del nombre
-    try:
-        family_code = generate_family_code_from_name(family.name)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    family_code = generate_family_code_from_name(family.name)
 
-    with SessionLocal() as db:
-        # Verificar si la sección existe
-        seccion = db.query(Section).filter(Section.id == family.section_id).first()
+    db = SessionLocal()
+    try:
+        seccion = db.query(Section).filter(Section.name == family.section_name).first()
         if not seccion:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"La sección con el código {family.section_id} no existe.",
+                detail=f"La sección con el nombre {family.section_name} no existe.",
             )
 
-        # Verificar si ya existe un código de familia
         if db.query(Family).filter(Family.cod == family_code).first():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="El código de la familia generado ya existe.",
             )
 
-        new_family = Family(
-            name=family.name,
-            cod=family_code,
-            section_id=family.section_id,
-        )
+        new_family = Family(name=family.name, cod=family_code, section_id=seccion.id)
         db.add(new_family)
-        try:
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-            ) from e
+        db.commit()
         db.refresh(new_family)
-        return new_family
+
+        # Devolver el objeto con la información actualizada, incluido el section_name
+        return FamiliaResponse(
+            id=new_family.id,
+            cod=new_family.cod,
+            name=new_family.name,
+            section_name=seccion.name,  # Aquí asignamos el nombre de la sección del objeto sección
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        ) from e
+    finally:
+        db.close()
 
 
 # Actualizar una familia existente
-@Familia.put("/families/{family_id}", response_model=FamiliaUpdate)
-async def update_family(family_id: int, family: FamiliaUpdate):
-    """update an existing family"""
+@Familia.put(
+    "/families/by-name/{family_name}", response_model=FamiliaResponse
+)  # Actualización por nombre
+async def update_family_by_name(family_name: str, family_update: FamiliaUpdate):
+    """update an existing family by name"""
     db = SessionLocal()
-    db_family = db.query(Family).get(family_id)
-    if db_family is None:
-        raise HTTPException(status_code=404, detail="Family not found")
-    db_family.name = family.name if family.name else db_family.name
-    db_family.cod = family.cod if family.cod else db_family.cod
-    db_family.description = (
-        family.description if family.description else db_family.description
-    )
-    db_family.section_id = (
-        family.section_id if family.section_id else db_family.section_id
-    )
-    db.commit()
-    db.refresh(db_family)
-    return FamiliaUpdate(
-        name=db_family.name,
-        cod=db_family.cod,
-        description=db_family.description,
-        section_id=db_family.section_id,
-    )
+    try:
+        # Buscar la familia existente por nombre
+        existing_family = db.query(Family).filter(Family.name == family_name).first()
+        if not existing_family:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"La familia con el nombre {family_name} no existe.",
+            )
+
+        # Actualizar la familia basándose en los datos proporcionados
+        if family_update.name:
+            existing_family.name = family_update.name
+            existing_family.cod = generate_family_code_from_name(family_update.name)
+
+        if family_update.section_name:
+            seccion = (
+                db.query(Section)
+                .filter(Section.name == family_update.section_name)
+                .first()
+            )
+            if not seccion:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"La sección con el nombre {family_update.section_name} no existe.",
+                )
+            existing_family.section_id = seccion.id
+
+        db.commit()
+        db.refresh(existing_family)
+
+        return FamiliaResponse(
+            id=existing_family.id,
+            cod=existing_family.cod,
+            name=existing_family.name,
+            section_name=(
+                seccion.name
+                if family_update.section_name
+                else existing_family.section.name
+            ),
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        ) from e
+    finally:
+        db.close()
 
 
 # Eliminar una familia
@@ -113,3 +142,34 @@ async def delete_family(family_id: int):
     db.delete(family)
     db.commit()
     return {"message": "Family deleted"}
+
+
+# Eliminar una familia por nombre
+@Familia.delete(
+    "/families/by-name/{family_name}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_family_by_name(family_name: str):
+    """delete an existing family by name"""
+    db = SessionLocal()
+    try:
+        # Buscar la familia existente por nombre
+        existing_family = db.query(Family).filter(Family.name == family_name).first()
+        if not existing_family:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"La familia con el nombre '{family_name}' no existe.",
+            )
+
+        # Eliminar la familia encontrada
+        db.delete(existing_family)
+        db.commit()
+
+        # Retornar una respuesta vacía
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        ) from e
+    finally:
+        db.close()
