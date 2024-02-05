@@ -1,4 +1,5 @@
 """Modelo de la tabla secciones."""
+
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -14,7 +15,6 @@ class Articulo(Base):
     id = Column(Integer, primary_key=True, index=True)
     cod_short = Column(String(6), unique=True, index=True)
     name = Column(String(250))
-    description = Column(String(255))
     codigos_barras = relationship("CodigoBarra", back_populates="articulo")
     family_id = Column(Integer, ForeignKey("families.id"))
     purchase_price = Column(Float)

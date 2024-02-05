@@ -8,6 +8,7 @@ from typing import List
 # Importaciones de terceros
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 # Importaciones locales de la aplicación
 from ..config.db import get_db
@@ -16,6 +17,7 @@ from ..models.m_articulo import (
     CodigoBarra as CodigoBarraModel,
 )
 from ..schemas.sch_articulo import Articulo, ArticuloCreate, ArticulosResponse
+from ..models.m_family import Family
 
 
 articulo_router = APIRouter()
@@ -58,26 +60,74 @@ async def read_articulo_by_nombre(nombre: str, db: Session = Depends(get_db)):
     return db_articulos
 
 
+def generar_codigo_barra_aleatorio():
+    """Generar un código de barras aleatorio"""
+    base = "775" + "".join(random.choices(string.digits, k=9))
+    digito_control = calcular_digito_control_ean13(base)
+    return base + digito_control
+
+
+def calcular_digito_control_ean13(base):
+    """Calcular el dígito de control de un código EAN-13."""
+    suma = sum((3 if i % 2 == 0 else 1) * int(n) for i, n in enumerate(base[:12]))
+    modulo = suma % 10
+    digito_control = (10 - modulo) % 10
+    return str(digito_control)
+
+
 # Crear un nuevo artículo
 @articulo_router.post("/articulos/", response_model=Articulo)
-async def create_articulo(articulo: ArticuloCreate, db: Session = Depends(get_db)):
-    """Crear un nuevo artículo"""
-    # Generar código corto
-    articulo.cod_short = "".join(random.choices(string.digits, k=6))
+async def create_articulo(articulo_data: ArticuloCreate, db: Session = Depends(get_db)):
+    """Crear un nuevo artículo."""
+    # Generar código corto único
+    while True:
+        cod_short = "".join(random.choices(string.digits, k=6))
+        if (
+            not db.query(ArticuloModel)
+            .filter(ArticuloModel.cod_short == cod_short)
+            .first()
+        ):
+            break
 
-    db_articulo = ArticuloModel(**articulo.dict())
-    db.add(db_articulo)
-    db.commit()
-    db.refresh(db_articulo)
+    # Encontrar el ID de la familia por el nombre
+    familia = db.query(Family).filter(Family.name == articulo_data.family_name).first()
+    if not familia:
+        raise HTTPException(status_code=404, detail="Familia not found")
 
-    # Generar código de barras
-    codigo_barra = "".join(random.choices(string.digits, k=13))
-    db_codigo = CodigoBarraModel(
-        codigos_barras=codigo_barra, articulo_id=db_articulo.id
+    # Preparar el diccionario
+    articulo_dict = articulo_data.dict(
+        exclude_unset=True, exclude={"family_name", "codigos_barras"}
     )
-    db.add(db_codigo)
-    db.commit()
+    articulo_dict.update({"family_id": familia.id, "cod_short": cod_short})
 
+    db_articulo = ArticuloModel(**articulo_dict)
+    try:
+        db.add(db_articulo)
+        db.commit()
+        db.refresh(db_articulo)
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Error al crear el artículo, posible duplicado."
+        ) from exc
+
+    # Manejar códigos de barras
+    codigos_barras_provided = articulo_data.codigos_barras
+    if codigos_barras_provided:
+        for codigo in codigos_barras_provided:
+            db_codigo = CodigoBarraModel(
+                codigos_barras=codigo.codigos_barras, articulo_id=db_articulo.id
+            )
+            db.add(db_codigo)
+    else:
+        # Generar un código de barras si no se proporciona ninguno
+        codigo_barra = generar_codigo_barra_aleatorio()
+        db_codigo = CodigoBarraModel(
+            codigos_barras=codigo_barra, articulo_id=db_articulo.id
+        )
+        db.add(db_codigo)
+
+    db.commit()
     return db_articulo
 
 
