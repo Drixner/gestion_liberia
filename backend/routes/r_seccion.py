@@ -77,3 +77,16 @@ async def delete_section(section_id: int):
     db.delete(section)
     db.commit()
     return {"message": "Section deleted"}
+
+
+# Eliminar una sección por nombre
+@Seccion.delete("/sections/by-name/{section_name}")
+async def delete_section_by_name(section_name: str):
+    """delete an existing section by name"""
+    db = SessionLocal()
+    section = db.query(Section).filter(Section.name == section_name).first()
+    if section is None:
+        raise HTTPException(status_code=404, detail="Section not found")
+    db.delete(section)
+    db.commit()
+    return {"message": "Section deleted"}
