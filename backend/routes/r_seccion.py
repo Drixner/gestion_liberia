@@ -25,9 +25,7 @@ async def create_section(section: SeccionCreate):
         # Generar el código corto
         short_code = section.nombre[:4].upper()
 
-        new_section = Section(
-            name=section.nombre, cod=short_code, description=section.descripcion
-        )
+        new_section = Section(name=section.nombre, cod=short_code)
         db.add(new_section)
         db.commit()
         db.refresh(new_section)
@@ -43,15 +41,29 @@ async def update_section(section_id: int, section: SeccionUpdate):
     if db_section is None:
         raise HTTPException(status_code=404, detail="Section not found")
     db_section.name = section.nombre if section.nombre else db_section.name
-    db_section.cod = section.cod if section.cod else db_section.cod
-    db_section.description = (
-        section.descripcion if section.descripcion else db_section.description
-    )
+    # Generar el nuevo código si el nombre ha cambiado
+    if section.nombre:
+        db_section.cod = section.nombre[:4].upper()
     db.commit()
     db.refresh(db_section)
-    return SeccionUpdate(
-        nombre=db_section.name, cod=db_section.cod, descripcion=db_section.description
-    )
+    return SeccionUpdate(nombre=db_section.name, cod=db_section.cod)
+
+
+# Actualizar una sección existente por nombre
+@Seccion.put("/sections/by-name/{section_name}", response_model=SeccionUpdate)
+async def update_section_by_name(section_name: str, section: SeccionUpdate):
+    """update an existing section by name"""
+    db = SessionLocal()
+    db_section = db.query(Section).filter(Section.name == section_name).first()
+    if db_section is None:
+        raise HTTPException(status_code=404, detail="Section not found")
+    db_section.name = section.nombre if section.nombre else db_section.name
+    # Generar el nuevo código si el nombre ha cambiado
+    if section.nombre:
+        db_section.cod = section.nombre[:4].upper()
+    db.commit()
+    db.refresh(db_section)
+    return SeccionUpdate(nombre=db_section.name, cod=db_section.cod)
 
 
 # Eliminar una sección

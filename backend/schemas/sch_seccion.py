@@ -1,4 +1,5 @@
 """Esquema para el manejo de las secciones"""
+
 from typing import Optional
 from pydantic import BaseModel
 
@@ -8,7 +9,6 @@ class SeccionCreate(BaseModel):
 
     cod: Optional[str]
     nombre: str
-    descripcion: Optional[str]
 
     class Config:
         """Configuraciones del modelo"""
@@ -21,4 +21,3 @@ class SeccionUpdate(BaseModel):
 
     nombre: Optional[str]
     cod: Optional[str]
-    descripcion: Optional[str]
