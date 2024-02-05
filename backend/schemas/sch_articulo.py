@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 
 class CodigoBarraBase(BaseModel):
-    """Modelo para el manejo de los códigos de barras."""
+    """Modelo base para el manejo de los códigos de barras."""
 
-    codigos_barras: str
+    codigos_barras: Optional[str]
 
 
 class CodigoBarraCreate(CodigoBarraBase):
@@ -15,7 +15,7 @@ class CodigoBarraCreate(CodigoBarraBase):
 
 
 class CodigoBarra(CodigoBarraBase):
-    """Modelo para el manejo de los códigos de barras."""
+    """Modelo completo para el manejo de los códigos de barras, incluyendo el ID."""
 
     id: int
 
@@ -26,13 +26,14 @@ class CodigoBarra(CodigoBarraBase):
 
 
 class ArticuloBase(BaseModel):
-    """Modelo para el manejo de los artículos."""
+    """Modelo base para el manejo de los artículos."""
 
-    cod_short: Optional[str]
-    name: str
-    description: Optional[str]
+    cod_short: Optional[str] = None  # Se generará automáticamente si no se proporciona
+    name: str  # Asumiendo que quieres agregar una descripción
     codigos_barras: List[CodigoBarraCreate] = []
-    family_id: int
+    family_name: Optional[str] = (
+        None  # Añadir el nombre de la familia en lugar de family_id
+    )
     purchase_price: float
     sale_price: float
     und: str
@@ -48,9 +49,10 @@ class ArticuloUpdate(BaseModel):
 
     name: Optional[str]
     cod_short: Optional[str]
-    description: Optional[str]
     codigos_barras: List[CodigoBarraCreate] = []
-    family_id: Optional[int]
+    family_name: Optional[str] = (
+        None  # Usar el nombre de la familia para actualizaciones
+    )
     purchase_price: Optional[float]
     sale_price: Optional[float]
     und: Optional[str]
@@ -58,9 +60,12 @@ class ArticuloUpdate(BaseModel):
 
 
 class Articulo(ArticuloBase):
-    """Modelo para el manejo de los artículos."""
+    """Modelo completo para el manejo de los artículos"""
 
     id: int
+    family_id: (
+        int  # Mantener el ID de la familia en la respuesta para referencias internas
+    )
 
     class Config:
         """Configuración del esquema."""
