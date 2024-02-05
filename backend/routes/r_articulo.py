@@ -1,4 +1,5 @@
 """Rutas para el recurso Articulo"""
+
 # Importaciones de la biblioteca estándar
 import random
 import string
@@ -14,18 +15,20 @@ from ..models.m_articulo import (
     Articulo as ArticuloModel,
     CodigoBarra as CodigoBarraModel,
 )
-from ..schemas.sch_articulo import Articulo, ArticuloCreate
+from ..schemas.sch_articulo import Articulo, ArticuloCreate, ArticulosResponse
 
 
 articulo_router = APIRouter()
 
 
 # Obtener una lista de articulos
-@articulo_router.get("/articulos/", response_model=List[Articulo])
+@articulo_router.get(
+    "/articulos", response_model=ArticulosResponse
+)  # Cambia List[Articulo] por ArticulosResponse
 async def get_articulos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Obtener todos los artículos"""
     articulos = db.query(ArticuloModel).offset(skip).limit(limit).all()
-    return articulos
+    return ArticulosResponse(articulos=articulos)
 
 
 # Obtener articulo por código de barra

@@ -1,4 +1,5 @@
 """ Esquema de Articulo. """
+
 from typing import Optional, List
 from pydantic import BaseModel
 
@@ -65,3 +66,9 @@ class Articulo(ArticuloBase):
         """Configuración del esquema."""
 
         from_attributes = True
+
+
+class ArticulosResponse(BaseModel):
+    """Modelo de respuesta para obtener una lista de artículos."""
+
+    articulos: List[Articulo]
