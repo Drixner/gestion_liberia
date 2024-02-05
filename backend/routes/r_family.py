@@ -1,4 +1,5 @@
 """ Rutas para el CRUD de familias """
+
 from fastapi import APIRouter, HTTPException, status
 from ..models.m_family import Family
 from ..models.m_seccion import Section
@@ -17,6 +18,15 @@ async def get_families():
     return {"families": families}
 
 
+# Función para generar el código de la familia a partir del nombre
+def generate_family_code_from_name(name: str) -> str:
+    """generate family code from name"""
+    # Asegúrate de que el nombre sea lo suficientemente largo
+    if len(name) < 4:
+        raise ValueError("El nombre de la familia debe tener al menos 4 letras")
+    return name[:4].upper()
+
+
 # Crear una nueva familia
 @Familia.post("/families", response_model=FamiliaCreate)
 async def create_family(family: FamiliaCreate):
@@ -27,6 +37,12 @@ async def create_family(family: FamiliaCreate):
             detail="El código de la sección es obligatorio.",
         )
 
+    # Generar el código de la familia a partir del nombre
+    try:
+        family_code = generate_family_code_from_name(family.name)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
     with SessionLocal() as db:
         # Verificar si la sección existe
         seccion = db.query(Section).filter(Section.id == family.section_id).first()
@@ -36,10 +52,16 @@ async def create_family(family: FamiliaCreate):
                 detail=f"La sección con el código {family.section_id} no existe.",
             )
 
+        # Verificar si ya existe un código de familia
+        if db.query(Family).filter(Family.cod == family_code).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El código de la familia generado ya existe.",
+            )
+
         new_family = Family(
             name=family.name,
-            cod=family.cod,
-            description=family.description,
+            cod=family_code,
             section_id=family.section_id,
         )
         db.add(new_family)

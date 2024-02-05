@@ -1,4 +1,5 @@
 """Esquemas para el modelo Familia"""
+
 from typing import Optional
 from pydantic import BaseModel
 
@@ -9,8 +10,7 @@ class FamiliaCreate(BaseModel):
     id: Optional[int]
     cod: str
     name: str
-    description: Optional[str]
-    section_id: int  # Asegúrate de incluir el id de la sección a la que pertenece la familia
+    section_name: Optional[str]
 
     class Config:
         """Configuraciones del modelo"""
@@ -23,5 +23,4 @@ class FamiliaUpdate(BaseModel):
 
     name: Optional[str]
     cod: Optional[str]
-    description: Optional[str]
-    section_id: Optional[int]
+    section_name: Optional[str]
