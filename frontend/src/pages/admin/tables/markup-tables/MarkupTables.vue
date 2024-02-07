@@ -57,6 +57,7 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import axios from 'axios'
   import data from '../../../../data/tables/markup-table/data.json'
 
   const { t } = useI18n()
