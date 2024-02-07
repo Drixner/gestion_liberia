@@ -28,7 +28,7 @@ articulo_router = APIRouter()
     "/articulos", response_model=ArticulosResponse
 )  # Cambia List[Articulo] por ArticulosResponse
 async def get_articulos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Obtener todos los artículos"""
+    """Obtener todos los artículos de la base de datos."""
     articulos = db.query(ArticuloModel).offset(skip).limit(limit).all()
     return ArticulosResponse(articulos=articulos)
 
