@@ -7,6 +7,8 @@ from ..schemas.sch_seccion import SeccionCreate, SeccionUpdate
 
 Seccion = APIRouter()
 
+""" Sección: Sección de un curso """
+
 
 # Obtener todas las secciones
 @Seccion.get("/sections")
