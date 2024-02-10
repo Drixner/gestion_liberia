@@ -2,7 +2,7 @@
 
 ## Estructura del Proyecto
 
-El proyecto se divide en dos partes principales: el backend y el frontend.
+El proyecto se divide en dos partes principales: el backend y el frontend, se sigue desarrollando el frontend
 
 ### Backend
 
