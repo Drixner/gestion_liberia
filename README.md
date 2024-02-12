@@ -36,10 +36,10 @@ El frontend está construido con Vue.js y se encuentra en la carpeta `frontend/`
 2. Ejecuta `npm install` para instalar las dependencias.
 3. Ejecuta `npm run serve` para iniciar el servidor de desarrollo.
 
-## Contribuir
-
-Si deseas contribuir al proyecto, por favor lee el archivo `CODE_OF_CONDUCT.md` y sigue las directrices allí establecidas.
-
 ## Licencia
 
 Este proyecto está licenciado bajo los términos de la licencia. Puedes leer los términos completos en el archivo `LICENSE`.
+
+## Stack
+
+Este proyecto esta desarrollado con las sigueintes tecnologias:
