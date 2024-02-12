@@ -13,6 +13,7 @@
           :animated="!isMobile"
         />
       </div>
+      <!-- Esto es un cambio -->
       <div class="app-layout__page">
         <div class="p-2 md:px-6 md:py-9">
           <router-view />
