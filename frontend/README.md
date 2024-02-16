@@ -1,60 +1,24 @@
-### Documentation
+# frontend
 
-Documentation, guides and tutorials are available
-on <a href="https://vuestic.dev">vuestic.dev</a>
-
-### Official Discord Server
-
-Ask questions at the official
-community [discord server](https://discord.gg/jTKTjj2weV)
-
-### Installation
-
-First of all, make sure you have all prerequisites installed:
-
-- [Node.js](https://nodejs.org/en/) ( >=14.\*)
-- [npm](https://www.npmjs.com/get-npm) version 3+ (
-  or [yarn](https://yarnpkg.com/lang/en/docs/install) version 1.16+)
-  and [Git](https://git-scm.com).
-
-After checking the prerequisites, follow these simple steps to install and use
-Vuestic Admin:
-
+## Project setup
 ```
-# clone the repo
-$ git clone https://github.com/epicmaxco/vuestic-admin.git myproject
-
-# go into app's directory and install dependencies:
-$ cd myproject
-
+npm install
 ```
 
-Then, if you use npm:
-
+### Compiles and hot-reloads for development
 ```
-$ npm install
-
-# serve with hot reload at localhost:8080 by default.
-$ npm run dev
-
-# build for production
-$ npm run build
-
-# build for production and view the bundle analyzer report.
-$ npm run build --report
+npm run serve
 ```
 
-If you use yarn:
-
+### Compiles and minifies for production
 ```
-$ yarn install
-
-# serve with hot reload at localhost:8080 by default.
-$ yarn dev
-
-# build for production
-$ yarn build
-
-# build for production and view the bundle analyzer report.
-$ yarn build --report
+npm run build
 ```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
