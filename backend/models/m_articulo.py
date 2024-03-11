@@ -26,7 +26,8 @@ class Articulo(Base):
 class CodigoBarra(Base):
     """Define la tabla de códigos de barras."""
 
-    # define la tabla de códigos de barras."""
+    # define la tabla de códigos de barras
+    # id, codigos_barras, articulo_id"""
 
     __tablename__ = "codigos_barras"
 
